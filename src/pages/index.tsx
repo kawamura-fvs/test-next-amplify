@@ -1,7 +1,4 @@
 import { useState, useEffect } from "react";
-import { API, graphqlOperation } from "@aws-amplify/api";
-import { createContactUs } from "@/graphql/mutations";
-import { listContactuses } from "@/graphql/queries"
 
 const IndexPage = () => {
   const [title, setTitle] = useState("");
@@ -17,16 +14,20 @@ const IndexPage = () => {
     e.preventDefault();
 
     try {
-      const result = await API.graphql(graphqlOperation(createContactUs, {
-        input: {
-          title: title,
-          detail: detail,
-          contact_type: contactType,
-          isResolve: false,
-          updated_at: new Date().toISOString()
-        }
-      }));
-      console.log("ContactUs created successfully:", result);
+      const result = await fetch("/api/contactUs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          detail,
+          contactType,
+        }),
+      });
+
+      const data = await result.json();
+      console.log("ContactUs created successfully:", data);
     } catch (error) {
       console.error("Error creating ContactUs:", error);
     }
@@ -34,13 +35,13 @@ const IndexPage = () => {
 
   const contactUsList = async () => {
     try {
-      const result: any = await API.graphql(graphqlOperation(listContactuses));
-      console.log(result);
-      setContactUsItems(result.data.listContactuses.items);
+      const result = await fetch("/api/contactUs");
+      const data = await result.json();
+      setContactUsItems(data);
     } catch (error) {
       console.error("Error list ContactUs:", error);
     }
-  }
+  };
 
   return (
     <div>
